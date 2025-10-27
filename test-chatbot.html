@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        button {
+            background: #7ebcaf;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #6aac9f;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>🤖 Chatbot Connection Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Check if chatbot.js loads</h2>
+        <button onclick="testChatbotLoad()">Test Load</button>
+        <div id="load-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Test API Key</h2>
+        <button onclick="testApiKey()">Test API Key</button>
+        <div id="apikey-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Test Gemini API Call</h2>
+        <button onclick="testGeminiCall()">Test API Call</button>
+        <div id="gemini-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Test Chatbot Class</h2>
+        <button onclick="testChatbotClass()">Test Class</button>
+        <div id="class-result" class="result"></div>
+    </div>
+
+    <script>
+        // Load chatbot.js
+        const script = document.createElement('script');
+        script.src = 'chatbot.js';
+        script.onload = function() {
+            console.log('✅ chatbot.js loaded successfully');
+        };
+        script.onerror = function() {
+            console.error('❌ Failed to load chatbot.js');
+        };
+        document.head.appendChild(script);
+
+        function testChatbotLoad() {
+            const resultDiv = document.getElementById('load-result');
+            
+            if (typeof NutriKartAssistant !== 'undefined') {
+                resultDiv.textContent = '✅ chatbot.js loaded successfully! NutriKartAssistant class is available.';
+                resultDiv.className = 'result success';
+            } else {
+                resultDiv.textContent = '❌ chatbot.js failed to load or NutriKartAssistant class not found.';
+                resultDiv.className = 'result error';
+            }
+        }
+
+        function testApiKey() {
+            const resultDiv = document.getElementById('apikey-result');
+            
+            try {
+                const assistant = new NutriKartAssistant();
+                if (assistant.geminiApiKey && assistant.geminiApiKey.length > 10) {
+                    resultDiv.textContent = `✅ API Key loaded: ${assistant.geminiApiKey.substring(0, 10)}...`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '❌ API Key not loaded or invalid.';
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ Error creating assistant: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testGeminiCall() {
+            const resultDiv = document.getElementById('gemini-result');
+            resultDiv.textContent = 'Testing...';
+            resultDiv.className = 'result';
+            
+            try {
+                const assistant = new NutriKartAssistant();
+                const response = await assistant.getGeminiResponse("Hello, are you working?");
+                
+                if (response && response.length > 0) {
+                    resultDiv.textContent = `✅ Gemini API working! Response: "${response}"`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '❌ Gemini API returned empty response.';
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ Gemini API error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        function testChatbotClass() {
+            const resultDiv = document.getElementById('class-result');
+            
+            try {
+                const assistant = new NutriKartAssistant();
+                
+                // Test if methods exist
+                const methods = ['sendMessage', 'getGeminiResponse', 'addMessage', 'showWelcomeMessage'];
+                const missingMethods = methods.filter(method => typeof assistant[method] !== 'function');
+                
+                if (missingMethods.length === 0) {
+                    resultDiv.textContent = '✅ Chatbot class working! All methods available.';
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ Missing methods: ${missingMethods.join(', ')}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ Error testing class: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>

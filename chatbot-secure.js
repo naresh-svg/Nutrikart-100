@@ -1,21 +1,36 @@
-// NutriKart Assistant with Gemini API
+// NutriKart Assistant with Secure API Configuration
 class NutriKartAssistant {
     constructor() {
         this.chatHistory = [];
         this.isTyping = false;
         this.messageCount = 0;
-        // API key for Gemini (in production, this should be in environment variables)
-        this.geminiApiKey = 'AIzaSyCMlN9eSb-PwFzqgT9-R0eWIq7WjJ3-Na4';
         
-        // Supabase Configuration
-        this.SUPABASE_URL = 'https://knbwwhsrsszrhrcsgvxg.supabase.co';
-        this.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuYnd3aHNyc3N6cmhyY3NndnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MDIxMTUsImV4cCI6MjA3Njk3ODExNX0.W0gogF-_MIzPPWv3MoN-xPUgDaQQJzGDrXhPJsl6Qpw';
+        // Load configuration from environment or config file
+        this.loadConfiguration();
+        
+        this.init();
+    }
+
+    loadConfiguration() {
+        // Try to load from config.js first, then fallback to environment variables
+        if (typeof config !== 'undefined') {
+            this.geminiApiKey = config.GEMINI_API_KEY;
+            this.SUPABASE_URL = config.SUPABASE_URL;
+            this.SUPABASE_ANON_KEY = config.SUPABASE_ANON_KEY;
+            this.geminiModel = config.GEMINI_MODEL;
+            this.geminiBaseUrl = config.GEMINI_BASE_URL;
+        } else {
+            // Fallback to environment variables or defaults
+            this.geminiApiKey = process.env.GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY';
+            this.SUPABASE_URL = process.env.SUPABASE_URL || 'https://knbwwhsrsszrhrcsgvxg.supabase.co';
+            this.SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
+            this.geminiModel = 'models/gemini-flash-latest';
+            this.geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+        }
         
         // Initialize Supabase (using correct CDN syntax)
         const { createClient } = supabase;
         this.supabase = createClient(this.SUPABASE_URL, this.SUPABASE_ANON_KEY);
-        
-        this.init();
     }
 
     async init() {
@@ -84,8 +99,8 @@ class NutriKartAssistant {
     }
 
     async getGeminiResponse(userMessage) {
-        if (!this.geminiApiKey) {
-            return "Please enter your Gemini API key to use the AI assistant.";
+        if (!this.geminiApiKey || this.geminiApiKey === 'YOUR_GEMINI_API_KEY') {
+            return "Please configure your Gemini API key in the config.js file to use the AI assistant.";
         }
 
         // If first message, add system context
@@ -136,8 +151,7 @@ class NutriKartAssistant {
         };
 
         // Make API call to Gemini with correct endpoint
-        const model = "models/gemini-flash-latest";
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${this.geminiApiKey}`, {
+        const response = await fetch(`${this.geminiBaseUrl}/${this.geminiModel}:generateContent?key=${this.geminiApiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -173,7 +187,6 @@ class NutriKartAssistant {
 
         return aiResponse;
     }
-
 
     addMessage(content, role) {
         const messagesContainer = document.getElementById('chat-messages');

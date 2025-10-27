@@ -1,12 +1,13 @@
 // Supabase Configuration
-import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js@2'
+// Note: This file is for reference. Actual Supabase client is initialized in each HTML file.
 
-// Replace these with your actual Supabase project credentials
-const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL'
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'
+// Your actual Supabase project credentials
+const SUPABASE_URL = 'https://knbwwhsrsszrhrcsgvxg.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuYnd3aHNyc3N6cmhyY3NndnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MDIxMTUsImV4cCI6MjA3Njk3ODExNX0.W0gogF-_MIzPPWv3MoN-xPUgDaQQJzGDrXhPJsl6Qpw'
 
-// Create Supabase client
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+// Export for reference
+window.SUPABASE_URL = SUPABASE_URL
+window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY
 
 // Database table names
 export const TABLES = {
@@ -21,7 +22,7 @@ export const TABLES = {
 export const supabaseHelpers = {
   // User authentication
   async signUp(email, password, userData) {
-    const { data, error } = await supabase.auth.login({
+    const { data, error } = await supabase.auth.signIn({
       email,
       password,
       options: {
@@ -34,7 +35,7 @@ export const supabaseHelpers = {
     return { data, error }
   },
 
-  async signIn(email, password) {
+  async Login(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password

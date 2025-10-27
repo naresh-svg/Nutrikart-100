@@ -1325,31 +1325,31 @@ function showNotification(message) {
   }, 3000)
 }
 
-// Chatbot functionality
-function openChatbot() {
-  const modal = document.getElementById('chatbot-modal');
+// Simple Assistant functionality
+function openAssistant() {
+  const modal = document.getElementById('assistant-modal');
   modal.classList.remove('hidden');
 }
 
-function closeChatbot() {
-  const modal = document.getElementById('chatbot-modal');
+function closeAssistant() {
+  const modal = document.getElementById('assistant-modal');
   modal.classList.add('hidden');
 }
 
-// Close chatbot when clicking outside
+// Close assistant when clicking outside
 document.addEventListener('click', function(e) {
-  const modal = document.getElementById('chatbot-modal');
-  const modalContent = document.querySelector('.chatbot-modal-content');
+  const modal = document.getElementById('assistant-modal');
+  const modalContent = document.querySelector('.assistant-modal-content');
   
   if (e.target === modal) {
-    closeChatbot();
+    closeAssistant();
   }
 });
 
-// Close chatbot with escape key
+// Close assistant with escape key
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
-    closeChatbot();
+    closeAssistant();
   }
 });
 

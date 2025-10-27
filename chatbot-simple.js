@@ -1,68 +1,100 @@
-// NutriKart Assistant with Gemini API
+// Simple NutriKart Assistant with Gemini API (No Supabase dependency)
 class NutriKartAssistant {
     constructor() {
         this.chatHistory = [];
         this.isTyping = false;
         this.messageCount = 0;
-        // API key for Gemini (in production, this should be in environment variables)
+        
+        // API key for Gemini
         this.geminiApiKey = 'AIzaSyCMlN9eSb-PwFzqgT9-R0eWIq7WjJ3-Na4';
+        this.geminiModel = 'models/gemini-flash-latest';
+        this.geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta';
         
-        // Supabase Configuration
-        this.SUPABASE_URL = 'https://knbwwhsrsszrhrcsgvxg.supabase.co';
-        this.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuYnd3aHNyc3N6cmhyY3NndnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MDIxMTUsImV4cCI6MjA3Njk3ODExNX0.W0gogF-_MIzPPWv3MoN-xPUgDaQQJzGDrXhPJsl6Qpw';
-        
-        // Initialize Supabase (using correct CDN syntax)
-        const { createClient } = supabase;
-        this.supabase = createClient(this.SUPABASE_URL, this.SUPABASE_ANON_KEY);
+        console.log('🤖 NutriKart Assistant initialized');
+        console.log('🔑 API Key:', this.geminiApiKey.substring(0, 10) + '...');
+        console.log('🎯 Model:', this.geminiModel);
         
         this.init();
     }
 
     async init() {
+        console.log('🚀 Initializing chatbot...');
         this.setupEventListeners();
         this.showWelcomeMessage();
+        console.log('✅ Chatbot ready!');
     }
 
     showWelcomeMessage() {
         const messagesContainer = document.getElementById('chat-messages');
-        messagesContainer.innerHTML = `
-            <div class="message bot-message">
-                <div class="message-content">
-                    <p>Hi! I'm your NutriKart AI assistant powered by Gemini. Ask me anything about nutrition, health, or meal planning!</p>
+        if (messagesContainer) {
+            messagesContainer.innerHTML = `
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <p>Hi! I'm your NutriKart AI assistant powered by Gemini. Ask me anything about nutrition, health, or meal planning!</p>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     }
 
     setupEventListeners() {
-        // Send message
-        document.getElementById('send-btn').addEventListener('click', () => {
-            this.sendMessage();
-        });
+        console.log('🔧 Setting up event listeners...');
+        
+        // Send message button
+        const sendBtn = document.getElementById('send-btn');
+        if (sendBtn) {
+            sendBtn.addEventListener('click', () => {
+                console.log('📤 Send button clicked');
+                this.sendMessage();
+            });
+        } else {
+            console.error('❌ Send button not found');
+        }
 
         // Enter key to send
-        document.getElementById('message-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.sendMessage();
-            }
-        });
+        const messageInput = document.getElementById('message-input');
+        if (messageInput) {
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    console.log('⌨️ Enter key pressed');
+                    this.sendMessage();
+                }
+            });
+        } else {
+            console.error('❌ Message input not found');
+        }
 
         // Refresh button
-        document.getElementById('refresh-btn').addEventListener('click', () => {
-            this.resetConversation();
-        });
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                console.log('🔄 Refresh button clicked');
+                this.resetConversation();
+            });
+        }
 
         // Close button
-        document.getElementById('close-btn').addEventListener('click', () => {
-            this.closeAssistant();
-        });
+        const closeBtn = document.getElementById('close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                console.log('❌ Close button clicked');
+                this.closeAssistant();
+            });
+        }
+
+        console.log('✅ Event listeners set up');
     }
 
     async sendMessage() {
         const input = document.getElementById('message-input');
         const message = input.value.trim();
         
-        if (!message) return;
+        console.log('📝 User message:', message);
+        
+        if (!message) {
+            console.log('⚠️ Empty message, ignoring');
+            return;
+        }
         
         // Add user message
         this.addMessage(message, 'user');
@@ -72,20 +104,24 @@ class NutriKartAssistant {
         this.showTypingIndicator();
         
         try {
+            console.log('🤖 Getting AI response...');
             // Get response from Gemini API
             const response = await this.getGeminiResponse(message);
             this.hideTypingIndicator();
             this.addMessage(response, 'bot');
+            console.log('✅ AI response received:', response.substring(0, 50) + '...');
         } catch (error) {
+            console.error('❌ Error getting AI response:', error);
             this.hideTypingIndicator();
             this.addMessage("Sorry, I'm having trouble connecting to the AI service. Please check your API key or try again later.", 'bot');
-            console.error('Gemini API Error:', error);
         }
     }
 
     async getGeminiResponse(userMessage) {
-        if (!this.geminiApiKey) {
-            return "Please enter your Gemini API key to use the AI assistant.";
+        console.log('🔗 Calling Gemini API...');
+        
+        if (!this.geminiApiKey || this.geminiApiKey === 'YOUR_GEMINI_API_KEY') {
+            throw new Error("Please configure your Gemini API key");
         }
 
         // If first message, add system context
@@ -135,9 +171,11 @@ class NutriKartAssistant {
             ]
         };
 
+        console.log('📤 Sending request to Gemini API...');
+        console.log('🎯 URL:', `${this.geminiBaseUrl}/${this.geminiModel}:generateContent?key=${this.geminiApiKey.substring(0, 10)}...`);
+
         // Make API call to Gemini with correct endpoint
-        const model = "models/gemini-flash-latest";
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${this.geminiApiKey}`, {
+        const response = await fetch(`${this.geminiBaseUrl}/${this.geminiModel}:generateContent?key=${this.geminiApiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -145,20 +183,24 @@ class NutriKartAssistant {
             body: JSON.stringify(requestBody)
         });
 
+        console.log('📥 Response status:', response.status);
+
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('API Error Details:', errorData);
+            console.error('❌ API Error Details:', errorData);
             throw new Error(`API request failed: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log('📊 Response data:', data);
         
         if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-            console.error('Invalid API Response:', data);
+            console.error('❌ Invalid API Response:', data);
             throw new Error('Invalid response from Gemini API');
         }
 
         const aiResponse = data.candidates[0].content.parts[0].text;
+        console.log('✅ AI Response:', aiResponse);
         
         // Add AI response to chat history
         this.chatHistory.push({
@@ -174,9 +216,15 @@ class NutriKartAssistant {
         return aiResponse;
     }
 
-
     addMessage(content, role) {
+        console.log(`💬 Adding ${role} message:`, content.substring(0, 50) + '...');
+        
         const messagesContainer = document.getElementById('chat-messages');
+        if (!messagesContainer) {
+            console.error('❌ Messages container not found');
+            return;
+        }
+        
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role}-message`;
         
@@ -193,6 +241,7 @@ class NutriKartAssistant {
     showTypingIndicator() {
         if (this.isTyping) return;
         
+        console.log('⏳ Showing typing indicator');
         this.isTyping = true;
         const messagesContainer = document.getElementById('chat-messages');
         const typingDiv = document.createElement('div');
@@ -214,6 +263,7 @@ class NutriKartAssistant {
     }
 
     hideTypingIndicator() {
+        console.log('✅ Hiding typing indicator');
         this.isTyping = false;
         const typingIndicator = document.getElementById('typing-indicator');
         if (typingIndicator) {
@@ -222,12 +272,14 @@ class NutriKartAssistant {
     }
 
     resetConversation() {
+        console.log('🔄 Resetting conversation');
         this.chatHistory = [];
         this.messageCount = 0;
         this.showWelcomeMessage();
     }
 
     closeAssistant() {
+        console.log('❌ Closing assistant');
         // In a real app, this would close the assistant
         // For demo purposes, we'll just reset the conversation
         this.resetConversation();
@@ -236,6 +288,7 @@ class NutriKartAssistant {
 
 // Initialize assistant when page loads
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOM loaded, initializing chatbot...');
     new NutriKartAssistant();
 });
 
