@@ -31,36 +31,76 @@
         <button class="nav-btn" data-section="recipes">Recipes</button>
         <button class="nav-btn" data-section="weekly-plan">Weekly Plan</button>
         <button class="nav-btn" data-section="cart">Cart</button>
+        <a class="nav-btn" href="marketplace.html">Marketplace</a>
         <button class="nav-btn" data-section="feedback">Feedback</button>
     </nav>
 
     <!-- Welcome Section -->
-    <section id="welcome" class="section">
-        <div class="welcome-box">
-            <h2>Welcome to <span class="brand">NutriKart</span></h2>
+    <section id="welcome" class="section welcome-section">
+        <div class="welcome-box welcome-center">
+            <h1 class="welcome-title">Welcome to <span class="brand">NutriKart</span></h1>
             <p class="welcome-text">Plan smarter, eat better, and achieve your health goals effortlessly!</p>
-            
-            <div class="feature-highlights">
-                <div class="feature-item">
-                    <img src="https://img.icons8.com/color/96/000000/shopping-cart.png" alt="Shopping" class="feature-icon">
-                    <h3>Smart Grocery Planning</h3>
-                </div>
-                <div class="feature-item">
-                    <img src="https://img.icons8.com/color/96/000000/restaurant.png" alt="Meals" class="feature-icon">
-                    <h3>AI Meal Suggestions</h3>
-                </div>
-                <div class="feature-item">
-                    <img src="https://img.icons8.com/color/96/000000/bar-chart.png" alt="Nutrition" class="feature-icon">
-                    <h3>Nutrition Tracking</h3>
-                </div>
-                <div class="feature-item">
-                    <img src="https://img.icons8.com/color/96/000000/calendar.png" alt="Planner" class="feature-icon">
-                    <h3>Weekly Planner</h3>
+
+            <div class="feature-section">
+                <h2 class="feature-heading">Explore Tools</h2>
+                <p class="feature-subtext">All your nutrition planning tools in one place</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/shopping-cart.png" alt="Shopping" class="feature-icon">
+                        <h3>Smart Grocery Planning</h3>
+                        <button class="nav-btn cta-button" data-section="groceries">Open</button>
+                    </div>
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/restaurant.png" alt="Meals" class="feature-icon">
+                        <h3>AI Meal Suggestions</h3>
+                        <button class="nav-btn cta-button" data-section="meals">Open</button>
+                    </div>
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/bar-chart.png" alt="Nutrition" class="feature-icon">
+                        <h3>Nutrition Tracking</h3>
+                        <button class="nav-btn cta-button" data-section="dashboard">View</button>
+                    </div>
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/calendar.png" alt="Planner" class="feature-icon">
+                        <h3>Weekly Planner</h3>
+                        <button class="nav-btn cta-button" data-section="weekly-plan">Plan</button>
+                    </div>
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/sell.png" alt="Marketplace" class="feature-icon">
+                        <h3>Marketplace</h3>
+                        <a href="marketplace.html" class="cta-button" style="text-align:center">Shop</a>
+                    </div>
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/feedback.png" alt="Feedback" class="feature-icon">
+                        <h3>Feedback</h3>
+                        <button class="nav-btn cta-button" data-section="feedback">Give Feedback</button>
+                    </div>
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/user.png" alt="Dashboard" class="feature-icon">
+                        <h3>Dashboard</h3>
+                        <button class="nav-btn cta-button" data-section="dashboard">Open</button>
+                    </div>
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/goal.png" alt="Goals" class="feature-icon">
+                        <h3>Goals</h3>
+                        <button class="nav-btn cta-button" data-section="goals">Set Goal</button>
+                    </div>
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/recipe.png" alt="Recipes" class="feature-icon">
+                        <h3>Recipes</h3>
+                        <button class="nav-btn cta-button" data-section="recipes">Create</button>
+                    </div>
+                    <div class="feature-card feature-item">
+                        <img src="https://img.icons8.com/color/96/000000/purchase-order.png" alt="Cart" class="feature-icon">
+                        <h3>Cart</h3>
+                        <button class="nav-btn cta-button" data-section="cart">View Cart</button>
+                    </div>
                 </div>
             </div>
-            
+
             <div class="button-container">
-                <button id="start-btn" class="continue-btn">Start Your Journey</button>
+                <button id="start-btn" class="continue-btn cta-sticky">Start Your Journey</button>
             </div>
         </div>
     </section>
@@ -184,14 +224,94 @@
                     <h4>Your Ingredients:</h4>
                     <div id="ingredients-list" class="ingredients-list"></div>
                 </div>
+
+                <!-- Ingredient Recommendations -->
+                <div class="ingredient-recommendations">
+                    <h4>Try adding:</h4>
+                    <div id="recommendation-chips" class="recommendation-chips"></div>
+                </div>
             </div>
 
             <div id="suggested-meals" class="suggested-meals hidden">
-                <h3>Suggested Meals</h3>
+                <div class="meals-header">
+                    <h3>Suggested Meals</h3>
+                    <div class="goal-filter">
+                        <label for="goal-filter">Filter by Goal:</label>
+                        <select id="goal-filter">
+                            <option value="all">All Goals</option>
+                            <option value="weight-loss">Weight Loss</option>
+                            <option value="muscle-gain">Muscle Gain</option>
+                            <option value="healthy-living">Healthy Living</option>
+                        </select>
+                    </div>
+                </div>
                 <div id="meals-grid" class="meals-grid"></div>
+                
+                <!-- Calories Summary -->
+                <div id="calories-summary" class="calories-summary hidden">
+                    <h4>Nutrition Summary</h4>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Calories</span>
+                            <span class="stat-value" id="total-calories">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Avg. Cook Time</span>
+                            <span class="stat-value" id="avg-cook-time">0 mins</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Best Match</span>
+                            <span class="stat-value" id="best-match">-</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Smart Nutrition Tip -->
+        <div id="nutrition-tip" class="nutrition-tip hidden">
+            <h4>💡 Smart Nutrition Tip</h4>
+            <p id="tip-content">Loading nutrition advice...</p>
+        </div>
     </section>
+
+    <!-- Recipe Modal -->
+    <div id="recipe-modal" class="recipe-modal hidden">
+        <div class="recipe-modal-content">
+            <div class="recipe-modal-header">
+                <h3 id="modal-recipe-name">Recipe Name</h3>
+                <button id="close-modal" class="close-modal">&times;</button>
+            </div>
+            <div class="recipe-modal-body">
+                <div class="recipe-info">
+                    <div class="info-item">
+                        <span class="info-label">Prep Time:</span>
+                        <span id="modal-prep-time">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Servings:</span>
+                        <span id="modal-servings">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Calories:</span>
+                        <span id="modal-calories">-</span>
+                    </div>
+                </div>
+                <div class="recipe-section">
+                    <h4>Ingredients</h4>
+                    <ul id="modal-ingredients"></ul>
+                </div>
+                <div class="recipe-section">
+                    <h4>Instructions</h4>
+                    <ol id="modal-instructions"></ol>
+                </div>
+                <div class="recipe-actions">
+                    <button id="save-to-weekly" class="continue-btn">Save to Weekly Plan</button>
+                    <button id="close-modal-btn" class="continue-btn secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Recipe Generator Section -->
     <section id="recipes" class="section hidden">
@@ -267,6 +387,7 @@
             <button id="print-list-btn" class="continue-btn">Print List</button>
             <button id="share-list-btn" class="continue-btn">Share List</button>
             <button id="clear-cart-btn" class="continue-btn">Clear All</button>
+            <a class="continue-btn" href="marketplace.html">Go to Marketplace</a>
         </div>
 
         <!-- Shopping Tips -->

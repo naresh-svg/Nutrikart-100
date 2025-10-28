@@ -714,6 +714,39 @@ function setupEventListeners() {
 
   // Edit Profile
   document.getElementById("edit-profile-btn").addEventListener("click", editProfile)
+
+  // Goal Filter
+  const goalFilter = document.getElementById("goal-filter")
+  if (goalFilter) {
+    goalFilter.addEventListener("change", () => {
+      loadSuggestedMeals()
+    })
+  }
+
+  // Recipe Modal
+  const closeModal = document.getElementById("close-modal")
+  const closeModalBtn = document.getElementById("close-modal-btn")
+  const saveToWeekly = document.getElementById("save-to-weekly")
+
+  if (closeModal) {
+    closeModal.addEventListener("click", closeRecipeModal)
+  }
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener("click", closeRecipeModal)
+  }
+  if (saveToWeekly) {
+    saveToWeekly.addEventListener("click", saveRecipeToWeekly)
+  }
+
+  // Close modal when clicking outside
+  const recipeModal = document.getElementById("recipe-modal")
+  if (recipeModal) {
+    recipeModal.addEventListener("click", (e) => {
+      if (e.target === recipeModal) {
+        closeRecipeModal()
+      }
+    })
+  }
 }
 
 // Logout Handler
@@ -959,33 +992,54 @@ function findMatchingMeals(userIngredients) {
 // Load Suggested Meals
 function loadSuggestedMeals() {
   renderIngredients()
+  loadRecommendationChips()
 
   if (userData.ingredients.length === 0) {
     document.getElementById("suggested-meals").classList.add("hidden")
+    document.getElementById("calories-summary").classList.add("hidden")
+    document.getElementById("nutrition-tip").classList.add("hidden")
     return
   }
 
   const suggested = findMatchingMeals(userData.ingredients)
+  const filteredMeals = filterMealsByGoal(suggested)
 
-  if (suggested.length === 0) {
+  if (filteredMeals.length === 0) {
     document.getElementById("suggested-meals").classList.add("hidden")
+    document.getElementById("calories-summary").classList.add("hidden")
+    document.getElementById("nutrition-tip").classList.add("hidden")
     return
   }
 
   document.getElementById("suggested-meals").classList.remove("hidden")
   const grid = document.getElementById("meals-grid")
-  grid.innerHTML = suggested
+  grid.innerHTML = filteredMeals
     .map(
       (meal) => `
-        <div class="meal-card" onclick="addMealToWeekly('${meal.name}')">
+        <div class="meal-card">
             <h4>${meal.name}</h4>
-            <p style="color: #7ebcaf; font-weight: 600; margin: 5px 0;">Match: ${meal.matchPercentage}%</p>
+            <div class="match-progress">
+                <div class="match-progress-bar">
+                    <div class="match-progress-fill" style="width: ${meal.matchPercentage}%"></div>
+                </div>
+                <div class="match-percentage">${meal.matchPercentage}% Match</div>
+            </div>
             <p>Time: ${meal.time} | Servings: ${meal.servings} | Calories: ${meal.calories}</p>
             <p style="font-size: 12px; color: #666; margin-top: 8px;">Ingredients: ${meal.ingredients.join(", ")}</p>
+            <div class="meal-actions">
+                <button class="meal-action-btn view-recipe-btn" onclick="viewRecipe('${meal.name}')">View Recipe</button>
+                <button class="meal-action-btn save-weekly-btn" onclick="saveMealToWeekly('${meal.name}')">Save to Weekly</button>
+            </div>
         </div>
     `,
     )
     .join("")
+
+  // Update calories summary
+  updateCaloriesSummary(filteredMeals)
+  
+  // Load nutrition tip
+  loadNutritionTip(userData.ingredients)
 }
 
 // Add Recipe Ingredient
@@ -1177,6 +1231,215 @@ function addMealToWeekly(mealName) {
   }
 }
 
+// Save Meal to Weekly Plan (new function)
+function saveMealToWeekly(mealName) {
+  const day = prompt("Which day? (Monday-Sunday)")
+  if (day && ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].includes(day)) {
+    userData.weeklyPlan[day] = mealName
+    saveData()
+    showNotification("✅ " + mealName + " saved to " + day + " in your weekly plan!")
+  }
+}
+
+// Filter meals by goal
+function filterMealsByGoal(meals) {
+  const goalFilter = document.getElementById("goal-filter")
+  const selectedGoal = goalFilter ? goalFilter.value : "all"
+  
+  if (selectedGoal === "all") return meals
+  
+  // Filter meals based on goal (this is a simple implementation)
+  // In a real app, you'd have goal-specific meal data
+  return meals.filter(meal => {
+    const mealName = meal.name.toLowerCase()
+    switch (selectedGoal) {
+      case "weight-loss":
+        return mealName.includes("salad") || mealName.includes("soup") || mealName.includes("grilled") || meal.calories < 300
+      case "muscle-gain":
+        return mealName.includes("protein") || mealName.includes("beef") || mealName.includes("chicken") || meal.calories > 400
+      case "healthy-living":
+        return mealName.includes("quinoa") || mealName.includes("vegetable") || mealName.includes("bowl") || meal.calories >= 200
+      default:
+        return true
+    }
+  })
+}
+
+// Load recommendation chips
+function loadRecommendationChips() {
+  const chipsContainer = document.getElementById("recommendation-chips")
+  if (!chipsContainer) return
+
+  const recommendations = [
+    "Spinach", "Rice", "Chicken", "Tomatoes", "Onions", "Garlic", 
+    "Bell Peppers", "Broccoli", "Carrots", "Eggs", "Cheese", "Olive Oil"
+  ]
+
+  // Filter out ingredients already added
+  const availableRecommendations = recommendations.filter(rec => 
+    !userData.ingredients.some(ing => ing.toLowerCase() === rec.toLowerCase())
+  )
+
+  chipsContainer.innerHTML = availableRecommendations
+    .slice(0, 6) // Show max 6 recommendations
+    .map(ingredient => 
+      `<span class="recommendation-chip" onclick="addRecommendedIngredient('${ingredient}')">+ ${ingredient}</span>`
+    ).join("")
+}
+
+// Add recommended ingredient
+function addRecommendedIngredient(ingredient) {
+  if (userData.ingredients.includes(ingredient)) {
+    showNotification("Already added")
+    return
+  }
+
+  userData.ingredients.push(ingredient)
+  saveData()
+  loadSuggestedMeals()
+  showNotification(ingredient + " added!")
+}
+
+// Update calories summary
+function updateCaloriesSummary(meals) {
+  const summaryElement = document.getElementById("calories-summary")
+  if (!summaryElement || meals.length === 0) return
+
+  const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0)
+  const avgCookTime = Math.round(meals.reduce((sum, meal) => {
+    const time = parseInt(meal.time) || 0
+    return sum + time
+  }, 0) / meals.length)
+  const bestMatch = meals[0]?.name || "-"
+
+  document.getElementById("total-calories").textContent = totalCalories
+  document.getElementById("avg-cook-time").textContent = avgCookTime + " mins"
+  document.getElementById("best-match").textContent = bestMatch
+
+  summaryElement.classList.remove("hidden")
+}
+
+// Load nutrition tip
+async function loadNutritionTip(ingredients) {
+  const tipElement = document.getElementById("nutrition-tip")
+  const tipContent = document.getElementById("tip-content")
+  
+  if (!tipElement || !tipContent) return
+
+  tipElement.classList.remove("hidden")
+
+  try {
+    // Try Gemini API first
+    const tip = await generateNutritionTipWithGemini(ingredients)
+    tipContent.textContent = tip
+  } catch (error) {
+    console.warn("Gemini API failed, using fallback:", error)
+    // Fallback to rule-based tips
+    tipContent.textContent = generateFallbackNutritionTip(ingredients)
+  }
+}
+
+// Generate nutrition tip with Gemini API
+async function generateNutritionTipWithGemini(ingredients) {
+  const GEMINI_API_KEY = "AIzaSyCMlN9eSb-PwFzqgT9-R0eWIq7WjJ3-Na4"
+  
+  if (!GEMINI_API_KEY || ingredients.length === 0) {
+    throw new Error("No API key or ingredients")
+  }
+
+  const prompt = `Based on these ingredients: ${ingredients.join(", ")}, provide a short, helpful nutrition tip (max 100 words) about combining them for optimal health benefits.`
+  
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{
+          text: prompt
+        }]
+      }]
+    })
+  })
+
+  if (!response.ok) {
+    throw new Error(`Gemini API error: ${response.status}`)
+  }
+
+  const data = await response.json()
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "Great ingredient combination!"
+}
+
+// Generate fallback nutrition tip
+function generateFallbackNutritionTip(ingredients) {
+  const tips = [
+    "💡 Try adding leafy greens like spinach or kale to boost your meal's vitamin content!",
+    "💡 Pair your proteins with colorful vegetables for a well-balanced, nutritious meal.",
+    "💡 Don't forget to include healthy fats like olive oil or avocado for better nutrient absorption.",
+    "💡 Adding herbs and spices not only enhances flavor but also provides antioxidants.",
+    "💡 Consider the rainbow - the more colorful your ingredients, the more diverse nutrients you get!",
+    "💡 Whole grains like quinoa or brown rice add fiber and keep you satisfied longer.",
+    "💡 Fresh ingredients are always best - they retain more vitamins and minerals than processed ones."
+  ]
+
+  // Simple logic based on ingredients
+  if (ingredients.some(ing => ing.toLowerCase().includes("chicken"))) {
+    return "💡 Chicken is a great lean protein! Pair it with vegetables and whole grains for a complete meal."
+  }
+  if (ingredients.some(ing => ing.toLowerCase().includes("spinach"))) {
+    return "💡 Spinach is packed with iron and folate! Add some citrus or tomatoes to boost iron absorption."
+  }
+  if (ingredients.some(ing => ing.toLowerCase().includes("rice"))) {
+    return "💡 Rice provides energy! Choose brown rice for extra fiber and nutrients."
+  }
+
+  return tips[Math.floor(Math.random() * tips.length)]
+}
+
+// View recipe modal
+function viewRecipe(mealName) {
+  const meal = mealDatabase[mealName]
+  if (!meal) return
+
+  const modal = document.getElementById("recipe-modal")
+  const modalName = document.getElementById("modal-recipe-name")
+  const modalPrepTime = document.getElementById("modal-prep-time")
+  const modalServings = document.getElementById("modal-servings")
+  const modalCalories = document.getElementById("modal-calories")
+  const modalIngredients = document.getElementById("modal-ingredients")
+  const modalInstructions = document.getElementById("modal-instructions")
+
+  modalName.textContent = mealName
+  modalPrepTime.textContent = meal.time
+  modalServings.textContent = meal.servings
+  modalCalories.textContent = meal.calories
+  modalIngredients.innerHTML = meal.ingredients.map(ing => `<li>${ing}</li>`).join("")
+  modalInstructions.innerHTML = meal.instructions.map(inst => `<li>${inst}</li>`).join("")
+
+  modal.classList.remove("hidden")
+}
+
+// Close recipe modal
+function closeRecipeModal() {
+  const modal = document.getElementById("recipe-modal")
+  modal.classList.add("hidden")
+}
+
+// Save recipe to weekly plan from modal
+function saveRecipeToWeekly() {
+  const modalName = document.getElementById("modal-recipe-name")
+  const mealName = modalName.textContent
+  
+  const day = prompt("Which day? (Monday-Sunday)")
+  if (day && ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].includes(day)) {
+    userData.weeklyPlan[day] = mealName
+    saveData()
+    showNotification("✅ " + mealName + " saved to " + day + " in your weekly plan!")
+    closeRecipeModal()
+  }
+}
+
 // Generate Shopping from Plan
 function generateShoppingFromPlan() {
   showNotification("Shopping list generated from weekly plan")
@@ -1357,3 +1620,10 @@ document.addEventListener('keydown', function(e) {
 if (localStorage.getItem("darkMode") === "true") {
   document.body.classList.add("dark-mode")
 }
+
+// Expose functions globally for onclick handlers
+window.viewRecipe = viewRecipe
+window.closeRecipeModal = closeRecipeModal
+window.saveRecipeToWeekly = saveRecipeToWeekly
+window.saveMealToWeekly = saveMealToWeekly
+window.addRecommendedIngredient = addRecommendedIngredient
